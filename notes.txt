@@ -1,0 +1,53 @@
+
+1- je lance mon app je vais directement page login
+
+// useEffect
+
+2- je recupere le token (getItem) actuel pour savoir si je suis connecté ou pas 
+2.1 si je suis connectée je vais aller à la page home
+2.2 rester sur page login
+
+// Axios
+
+3- Quand je lance ma demande de connexion (Axios) une promesse
+
+   -3.1 si tout les identifiants sont correct donc on a une reponse qui contient les data du user (y compris son token)
+
+    3.1.1 une fois on a la réponse donc on va stoker le token dans le local storage (SetItem) 
+    3.1.2 Aller dans une autre page
+
+  -3.2 si un probleme on a pas de réponse mais on a un reject contenant les erreur qu'on doit afficher à l'utilisateur 
+
+
+
+
+ un token est genere et on le stock dans local storage 
+
+
+
+
+
+
+
+const login = async () => {
+  //enovie email et passord
+    let response = axios.post('http://localhost:3000/api/users/login', 
+      {
+        "user": {
+        
+            "email": email,
+            "password":password
+        }
+      }
+    )
+    .then( (res: any)=>{
+      // console.log('res********************', res.data.user.token)
+      const t = AsyncStorage.setItem('token', res.data.user.token);
+      const token =  AsyncStorage.getItem('token');
+      console.log('*********local storage**********', token);
+    
+    
+    })
+    .catch((error:any) => console.error('7777777777777777777', error))
+
+  }

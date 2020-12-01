@@ -1,26 +1,79 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { Alert } from 'react-native';
+import AsyncStorage  from '@react-native-async-storage/async-storage';
 import { StyleSheet, TouchableHighlight, Image, TextInput } from 'react-native';
 import getActions from '../utils/getActions'
 import { Text, View } from '../components/Themed';
+import axios from 'axios';
 
 export default function TabThreeScreen() {
-  const [actions, setActionsList] =useState([])
+  // const [actions, setActionsList] =useState([])
   const [email, setEmail] = useState("")
   const [password, setPasswd] = useState("")
 
-  const onClickListener = (viewId) => {
+  const onClickListener = (viewId: any) => {
     Alert.alert("Alert", "Button pressed "+ viewId);
   }
+  const login = async () => {
+    let response = axios.post('http://localhost:3000/api/users/login', 
+      {
+        "user": {
+        
+            "email": email,
+            "password":password
+        }
+      }
+    )
+    .then( (res: any)=>{
+     
+      // const token = AsyncStorage.getItem('token');
+      let token = res.data.user.token;
+      _storeData(token);
+     
+    })
+    .catch((error:any) => console.error('7777777777777777777', error))
+
+  }
+  const _storeData = async (token: string) => {
+    try {
+      await AsyncStorage.setItem(
+        'token',
+        token
+      );
+    } catch (error) {
+      // Error saving data
+      console.error('Error local storage ', error);
+    }
+  }
+  const _retrieveData = async () => {
+    try {
+      const value = await AsyncStorage.getItem('token');
+      if (value !== null) {
+        // We have data!!
+        console.log('We have data in storage!!',value);
+      }
+    } catch (error) {
+      // Error retrieving data
+      console.log("erreur recup token storage")
+    }
+  };
   useEffect(() => {
-    fetch('http://localhost:3000/api/playing/') 
-    .then((response) => response.json())
-    .then((responseJson) => setActionsList(Object.values(responseJson)))
-     .catch((error) => console.error('error in catch ----------',error))
+    // 2 - je recupere le token(getItem) actuel pour savoir si je suis connecté ou pas
+    // 2.1 si je suis connectée je vais aller à la page home
+    // 2.2 rester sur page login
+    console.log("ici useeffect")
+    let token = _retrieveData();
+    console.log("Token in useeffect", token)
+
+    // fetch('http://localhost:3000/api/playing/') 
+    // .then((response) => response.json())
+    // .then((responseJson) => setActionsList(Object.values(responseJson)))
+    //  .catch((error) => console.error('error in catch ----------',error))
     }, [])
 
-  console.log('actions :>> ', actions);
+
+
   return (
     <View style={styles.container}>
         <View style={styles.inputContainer}>
@@ -29,7 +82,7 @@ export default function TabThreeScreen() {
               placeholder="Email"
               keyboardType="email-address"
               underlineColorAndroid='transparent'
-              onChangeText={(email) => setEmail({email: String})}/>
+              onChangeText={(email: string) => setEmail(email)}/>
         </View>
         
         <View style={styles.inputContainer}>
@@ -38,10 +91,10 @@ export default function TabThreeScreen() {
               placeholder="Password"
               secureTextEntry={true}
               underlineColorAndroid='transparent'
-              onChangeText={(password) => setPasswd({password: String})}/>
+              onChangeText={(password : string) => setPasswd(password)}/>
         </View>
 
-        <TouchableHighlight style={[styles.buttonContainer, styles.loginButton]} onPress={() => onClickListener('login')}>
+      <TouchableHighlight style={[styles.buttonContainer, styles.loginButton]} onPress={login }>
           <Text style={styles.loginText}>Login</Text>
         </TouchableHighlight>
 
